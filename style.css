@@ -76,19 +76,24 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
+    perspective: 1000px;
 }
 
 .saturn {
     position: relative;
     width: 200px;
     height: 200px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    cursor: grab;
+    transition: all 0.1s ease;
+    transform-style: preserve-3d;
 }
 
 .saturn:hover {
-    transform: scale(1.1);
     filter: brightness(1.2);
+}
+
+.saturn:active {
+    cursor: grabbing;
 }
 
 .saturn-body {
