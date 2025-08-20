@@ -1,28 +1,28 @@
-// Image paths provided by user
+// Image paths for GitHub deployment (relative paths)
 const imagePaths = [
-    "/photos/IMG-20240925-WA0374.jpg",
-    "/photos/IMG-20240925-WA0375.jpg",
-    "/photos/IMG-20241001-WA0046.jpg",
-    "/photos/IMG-20241001-WA0047.jpg",
-    "/photos/IMG-20241001-WA0065.jpg",
-    "/photos/IMG-20241003-WA0088_1.jpg",
-    "/photos/IMG-20241019-WA0051_1.jpg",
-    "/photos/IMG-20241029-WA0201.jpg",
-    "/photos/IMG-20241030-WA0041.jpg",
-    "/photos/IMG-20241030-WA0042.jpg",
-    "/photos/IMG-20241030-WA0044.jpg",
-    "/photos/IMG-20241116-WA0097.jpg",
-    "/photos/IMG-20241117-WA0102.jpg",
-    "/photos/IMG-20241119-WA0082.jpg",
-    "/photos/IMG-20241119-WA0087.jpg",
-    "/photos/IMG-20241124-WA0011.jpg",
-    "/photos/IMG-20250101-WA0031.jpg",
-    "/photos/IMG-20250101-WA0032.jpg",
-    "/photos/IMG-20240516-WA0038 - Copy.jpg",
-    "/photos/IMG-20240921-WA0006 - Copy.jpg",
-    "/photos/IMG-20240921-WA0008.jpg",
-    "/photos/IMG-20240921-WA0010.jpg",
-    "/photos/IMG-20240924-WA0070.jpg"
+    "images/IMG-20240925-WA0374.jpg",
+    "images/IMG-20240925-WA0375.jpg",
+    "images/IMG-20241001-WA0046.jpg",
+    "images/IMG-20241001-WA0047.jpg",
+    "images/IMG-20241001-WA0065.jpg",
+    "images/IMG-20241003-WA0088_1.jpg",
+    "images/IMG-20241019-WA0051_1.jpg",
+    "images/IMG-20241029-WA0201.jpg",
+    "images/IMG-20241030-WA0041.jpg",
+    "images/IMG-20241030-WA0042.jpg",
+    "images/IMG-20241030-WA0044.jpg",
+    "images/IMG-20241116-WA0097.jpg",
+    "images/IMG-20241117-WA0102.jpg",
+    "images/IMG-20241119-WA0082.jpg",
+    "images/IMG-20241119-WA0087.jpg",
+    "images/IMG-20241124-WA0011.jpg",
+    "images/IMG-20250101-WA0031.jpg",
+    "images/IMG-20250101-WA0032.jpg",
+    "images/IMG-20240516-WA0038.jpg",
+    "images/IMG-20240921-WA0006.jpg",
+    "images/IMG-20240921-WA0008.jpg",
+    "images/IMG-20240921-WA0010.jpg",
+    "images/IMG-20240924-WA0070.jpg"
 ];
 
 // Love messages
@@ -47,12 +47,22 @@ let messageTimeout;
 let currentMessageIndex = 0;
 let isPlaying = false;
 
+// Planet rotation variables
+let mouseX = 0;
+let mouseY = 0;
+let planetRotationX = 0;
+let planetRotationY = 0;
+let isMouseDown = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+
 // Initialize the website
 document.addEventListener('DOMContentLoaded', function() {
     createOrbitingImages();
     setupEventListeners();
     startRandomMessages();
     setupPlanetInteraction();
+    setupPlanetRotation();
 });
 
 // Create orbiting images around Saturn
@@ -378,6 +388,118 @@ document.addEventListener('touchend', function(e) {
         showRandomMessage();
     }
 });
+
+// Setup planet rotation with mouse/touch interaction
+function setupPlanetRotation() {
+    const saturn = document.querySelector('.saturn');
+    const saturnContainer = document.querySelector('.saturn-container');
+    
+    // Mouse events
+    document.addEventListener('mousemove', function(e) {
+        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+        mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+        
+        if (isMouseDown) {
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
+            
+            planetRotationY += deltaX * 0.5;
+            planetRotationX += deltaY * 0.5;
+            
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        } else {
+            // Gentle rotation following mouse position
+            planetRotationY = mouseX * 15;
+            planetRotationX = mouseY * 10;
+        }
+        
+        updatePlanetRotation();
+    });
+    
+    // Mouse down/up events for dragging
+    saturn.addEventListener('mousedown', function(e) {
+        isMouseDown = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        saturn.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mouseup', function() {
+        isMouseDown = false;
+        saturn.style.cursor = 'grab';
+    });
+    
+    // Touch events for mobile
+    saturn.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 1) {
+            isMouseDown = true;
+            lastMouseX = e.touches[0].clientX;
+            lastMouseY = e.touches[0].clientY;
+            e.preventDefault();
+        }
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            mouseX = (touch.clientX / window.innerWidth) * 2 - 1;
+            mouseY = (touch.clientY / window.innerHeight) * 2 - 1;
+            
+            if (isMouseDown) {
+                const deltaX = touch.clientX - lastMouseX;
+                const deltaY = touch.clientY - lastMouseY;
+                
+                planetRotationY += deltaX * 0.5;
+                planetRotationX += deltaY * 0.5;
+                
+                lastMouseX = touch.clientX;
+                lastMouseY = touch.clientY;
+            } else {
+                planetRotationY = mouseX * 15;
+                planetRotationX = mouseY * 10;
+            }
+            
+            updatePlanetRotation();
+            e.preventDefault();
+        }
+    });
+    
+    document.addEventListener('touchend', function() {
+        isMouseDown = false;
+    });
+    
+    // Set initial cursor style
+    saturn.style.cursor = 'grab';
+}
+
+// Update planet rotation based on mouse/touch position
+function updatePlanetRotation() {
+    const saturn = document.querySelector('.saturn');
+    const rings = document.querySelector('.saturn-rings');
+    
+    // Apply 3D rotation to the planet
+    saturn.style.transform = `
+        rotateX(${planetRotationX}deg) 
+        rotateY(${planetRotationY}deg)
+        scale(${isMouseDown ? 1.05 : 1})
+    `;
+    
+    // Apply subtle rotation to rings for more realism
+    rings.style.transform = `
+        translate(-50%, -50%) 
+        rotateX(${75 + planetRotationX * 0.3}deg) 
+        rotateY(${planetRotationY * 0.5}deg)
+    `;
+    
+    // Add extra glow when interacting
+    if (isMouseDown) {
+        saturn.style.filter = 'brightness(1.3) drop-shadow(0 0 40px gold)';
+    } else {
+        saturn.style.filter = '';
+    }
+}
 
 console.log('🌟 Planet of Love initialized successfully! 💕');
 console.log('💫 Click on Saturn or images to see love messages!');
